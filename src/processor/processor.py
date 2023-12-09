@@ -1,4 +1,4 @@
-import pytorch_lightning as pl
+import pytorch_lightning as L
 import matplotlib.pyplot as plt
 from pathlib import Path
 from PIL import Image
@@ -23,15 +23,15 @@ class ImgDataset(Dataset):
     def __getitem__(self, idx):
         predictors_path = self.predictors_dataset[idx]
         targets_path = self.targets_dataset[idx]
-        predictors_img = Image.open(predictors_path).convert("RGB")
-        targets_img = Image.open(targets_path).convert("L")
+        predictors_img = Image.open(predictors_path).convert("L")
+        targets_img = Image.open(targets_path).convert("RGB")
         if self.transform:
             predictors_img = self.transform(predictors_img)
             targets_img = self.transform(targets_img)
         return predictors_img, targets_img
 
 
-class DataModule(pl.LightningDataModule):
+class DataModule(L.LightningDataModule):
     def __init__(
         self,
         predictors_dir,
@@ -70,10 +70,10 @@ class DataModule(pl.LightningDataModule):
     def plot_sample(self, idx, figsize=(8, 8)):
         X, y = self.dataset[idx]
         fig, ax = plt.subplots(1, 2, figsize=figsize)
-        ax[0].imshow(X.permute(1, 2, 0))
+        ax[0].imshow(X[0], cmap="gray")
         ax[0].set_title("Predictor")
         ax[0].axis("off")
-        ax[1].imshow(y[0], cmap="gray")
+        ax[1].imshow(y.permute(1, 2, 0))
         ax[1].set_title("Target")
         ax[1].axis("off")
         plt.show()
