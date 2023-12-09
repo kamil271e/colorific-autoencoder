@@ -1,5 +1,8 @@
-numpy
-opencv-python
+jupyterlab~=3.6.3
+matplotlib
 torch
-lightning
+torchvision
+pytorch-lightning
 pre-commit
+pathlib
+PIL
