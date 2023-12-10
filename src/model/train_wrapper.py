@@ -26,18 +26,21 @@ class AutoEncoder(L.LightningModule):
         X, y = batch
         y_hat = self.model.forward(X)
         loss = self.criterion(y, y_hat)
+        self.log("train_loss", loss, prog_bar=True, on_step=True, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         X, y = batch
         y_hat = self.model.forward(X)
         loss = self.criterion(y, y_hat)
+        self.log("val_loss", loss, prog_bar=True, on_step=False, on_epoch=True)
         return loss
 
     def test_step(self, batch, batch_idx):
         X, y = batch
         y_hat = self.model.forward(X)
         loss = self.criterion(y, y_hat)
+        self.log("test_loss", loss, prog_bar=True, on_step=False, on_epoch=True)
         return loss
 
     def configure_optimizers(self):
