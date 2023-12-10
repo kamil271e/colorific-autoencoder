@@ -34,8 +34,8 @@ class ImgDataset(Dataset):
 class DataModule(L.LightningDataModule):
     def __init__(
         self,
-        predictors_dir,
-        targets_dir,
+        predictors_dir="../data/gray/",
+        targets_dir="../data/color/",
         resolution=(224, 224),
         batch_size=32,
         train_split_ratio=0.7,
