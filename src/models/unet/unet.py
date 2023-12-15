@@ -3,8 +3,8 @@ import pytorch_lightning as L
 
 sys.path.append("..")
 
-from src.model.encoder import Encoder
-from src.model.decoder import Decoder
+from src.models.unet.encoder import Encoder
+from src.models.unet.decoder import Decoder
 
 
 class UNet(L.LightningModule):
