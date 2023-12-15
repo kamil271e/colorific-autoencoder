@@ -1,9 +1,15 @@
 import pytorch_lightning as L
 import matplotlib.pyplot as plt
+import sys
 from pathlib import Path
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
+
+sys.path.append("..")
+from src.utils.config import Config
+
+config = Config()
 
 
 class ImgDataset(Dataset):
@@ -11,8 +17,10 @@ class ImgDataset(Dataset):
         self.predictors_root = Path(predictors_root)
         self.targets_root = Path(targets_root)
         self.transform = transform
-        self.predictors_dataset = list(self.predictors_root.glob("*.jpg"))
-        self.targets_dataset = list(self.targets_root.glob("*.jpg"))
+        self.predictors_dataset = list(
+            self.predictors_root.glob(f"*.{config.IMAGE_EXT}")
+        )
+        self.targets_dataset = list(self.targets_root.glob(f"*.{config.IMAGE_EXT}"))
         assert len(self.predictors_dataset) == len(
             self.targets_dataset
         ), "Datasets must have the same length"
@@ -34,11 +42,11 @@ class ImgDataset(Dataset):
 class DataModule(L.LightningDataModule):
     def __init__(
         self,
-        predictors_dir="../data/gray/",
-        targets_dir="../data/color/",
-        resolution=(224, 224),
-        batch_size=32,
-        train_split_ratio=0.7,
+        predictors_dir=config.PREDICTORS_DIR,
+        targets_dir=config.TARGETS_DIR,
+        resolution=config.IMAGE_RESOLUTION,
+        batch_size=config.BATCH_SIZE,
+        train_split_ratio=config.TRAIN_RATIO,
     ):
         super(DataModule, self).__init__()
         self.predictors_dir = predictors_dir

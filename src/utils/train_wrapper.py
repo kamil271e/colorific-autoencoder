@@ -8,10 +8,19 @@ sys.path.append("..")
 
 from src.models.unet.unet import UNet
 from src.processor.processor import DataModule
+from src.utils.config import Config
+
+config = Config()
 
 
 class AutoEncoder(L.LightningModule):
-    def __init__(self, in_channels=1, out_channels=3, unit=16, lr=1e-3):
+    def __init__(
+        self,
+        in_channels=config.IN_CHANNELS,
+        out_channels=config.OUT_CHANNELS,
+        unit=config.OUT_CHANNELS,
+        lr=config.LR,
+    ):
         super().__init__()
         self.model = UNet(in_channels, out_channels, unit)
         self.criterion = nn.MSELoss()
@@ -59,7 +68,13 @@ class AutoEncoder(L.LightningModule):
         pass
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=config.SCHEDULER_STEP_SIZE,
+            gamma=config.SCHEDULER_GAMMA,
+        )
+        return [optimizer], [scheduler]
 
     #####################################################
 
@@ -119,8 +134,12 @@ class AutoEncoder(L.LightningModule):
 
     #####################################################
 
-    def save_model(self, path="checkpoint.pt"):
-        torch.save(self.model.state_dict(), path)
-
-    def load_model(self, path="checkpoint.pt"):
-        self.model.load_state_dict(torch.load(path))
+    def load_model(self, path=config.CKPT_PATH):
+        ckpt = torch.load(path)
+        # prefix = 'models.'
+        # if any(key.startswith(prefix) for key in ckpt):
+        #     state_dict = {key.replace(prefix, ''): value for key, value in ckpt.items() if key.startswith(prefix)}
+        # else:
+        #     state_dict = ckpt
+        # self.model.load_state_dict(state_dict)
+        self.load_state_dict(ckpt["state_dict"])

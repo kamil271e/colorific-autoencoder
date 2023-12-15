@@ -8,7 +8,7 @@ from src.models.unet.decoder import Decoder
 
 
 class UNet(L.LightningModule):
-    def __init__(self, in_channels, out_channels, unit=16):
+    def __init__(self, in_channels, out_channels, unit):
         super(UNet, self).__init__()
         self.encoder = Encoder(in_channels, unit)
         self.decoder = Decoder(out_channels, unit)
