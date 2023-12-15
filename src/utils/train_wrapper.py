@@ -46,7 +46,7 @@ class AutoEncoder(L.LightningModule):
         self.total_train_loss_epoch += loss
         self.train_samples_epoch += X.size(0)
         self.log("train_loss", loss, prog_bar=True, on_step=True, on_epoch=True)
-        return loss
+        return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
         X, y = batch
@@ -55,17 +55,14 @@ class AutoEncoder(L.LightningModule):
         self.total_val_loss_epoch += loss
         self.val_samples_epoch += X.size(0)
         self.log("val_loss", loss, prog_bar=True, on_step=False, on_epoch=True)
-        return loss
+        return {"val_loss": loss}
 
     def test_step(self, batch, batch_idx):
         X, y = batch
         y_hat = self.model.forward(X)
         loss = self.criterion(y, y_hat)
         self.log("test_loss", loss, prog_bar=True, on_step=False, on_epoch=True)
-        return loss
-
-    def predict_step(self, batch, batch_idx):
-        pass
+        return {"test_loss": loss}
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -89,9 +86,8 @@ class AutoEncoder(L.LightningModule):
         self.val_loss_list.append(avg_val_loss.cpu().detach().numpy())
         self.total_val_loss_epoch = 0
         self.val_samples_epoch = 0
-
-    def on_test_epoch_end(self):
-        pass
+        lr = self.optimizers().param_groups[0]["lr"]
+        self.log("lr", lr, prog_bar=True, on_step=False, on_epoch=True)
 
     def plot_loss(self):
         x = torch.arange(1, len(self.train_loss_list) + 1)
@@ -136,10 +132,4 @@ class AutoEncoder(L.LightningModule):
 
     def load_model(self, path=config.CKPT_PATH):
         ckpt = torch.load(path)
-        # prefix = 'models.'
-        # if any(key.startswith(prefix) for key in ckpt):
-        #     state_dict = {key.replace(prefix, ''): value for key, value in ckpt.items() if key.startswith(prefix)}
-        # else:
-        #     state_dict = ckpt
-        # self.model.load_state_dict(state_dict)
         self.load_state_dict(ckpt["state_dict"])

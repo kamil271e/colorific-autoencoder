@@ -9,7 +9,7 @@ class Config:
     # DATA MODULE
     TRAIN_RATIO = 0.7
     BATCH_SIZE = 32
-    IMAGE_RESOLUTION = (224, 224)
+    IMAGE_RESOLUTION = (160, 160)  # x, y % 32 == 0
     PREDICTORS_DIR = "../data/gray/"
     TARGETS_DIR = "../data/color/"
     IMAGE_EXT = "jpg"
@@ -17,20 +17,21 @@ class Config:
     # MODEL ARCHITECTURE
     IN_CHANNELS = 1
     OUT_CHANNELS = 3
-    UNIT = 2
+    UNIT = 16
 
     # TRAINING DETAILS
     LR = 1e-3
-    EPOCHS = 2
+    EPOCHS = 200
     EARLY_STOP_PATIENCE = 5
     LR_MONITOR = True
-    SCHEDULER_STEP_SIZE = 2
+    SCHEDULER_STEP_SIZE = 10
     SCHEDULER_GAMMA = 0.9
     CKPT_DIR = "checkpoints"
     CKPT_NAME = f"b{BATCH_SIZE}_u{UNIT}_e{EPOCHS}"
     CKPT_PATH = os.path.join(CKPT_DIR, CKPT_NAME + ".ckpt")
     FAST_DEV_RUN = False
     NUM_SANITY_VAL_STEPS = 0
+    LOG_STEPS = 20
 
     @classmethod
     def get_trainer_args(cls):
@@ -38,6 +39,7 @@ class Config:
             "max_epochs": cls.EPOCHS,
             "fast_dev_run": cls.FAST_DEV_RUN,
             "num_sanity_val_steps": cls.NUM_SANITY_VAL_STEPS,
+            "log_every_n_steps": cls.LOG_STEPS,
             "callbacks": cls.get_callbacks(),
         }
 
@@ -52,9 +54,10 @@ class Config:
 
     @classmethod
     def get_callbacks(cls):
-        return Callbacks(
+        callbacks = Callbacks(
             ckpt_path=cls.CKPT_DIR,
             ckpt_file=cls.CKPT_NAME,
             early_stop_patience=cls.EARLY_STOP_PATIENCE,
             lr_monitor=cls.LR_MONITOR,
         )
+        return callbacks.callbacks

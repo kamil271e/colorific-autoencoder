@@ -15,8 +15,9 @@ class Callbacks(L.Callback):
         self.model_checkpoint = None
         self.early_stopping = None
         self.callbacks = None
+        self.init()
 
-    def on_fit_start(self, trainer, pl_module):
+    def init(self):
         self.model_checkpoint = ModelCheckpoint(
             dirpath=self.ckpt_path,
             filename=self.ckpt_file,
@@ -31,21 +32,11 @@ class Callbacks(L.Callback):
             monitor="val_loss",
             mode="min",
             min_delta=1e-6,
+            verbose=True,
         )
 
-        self.callbacks = [self.model_checkpoint, self.early_stopping]
+        self.callbacks = [self.early_stopping, self.model_checkpoint]
 
         if self.lr_monitor:
             lr_monitor = LearningRateMonitor(logging_interval="epoch")
             self.callbacks.append(lr_monitor)
-
-    def on_train_epoch_end(self, trainer, pl_module):
-        for callback in self.callbacks:
-            callback.on_train_epoch_end(trainer, pl_module)
-
-    def on_validation_epoch_end(self, trainer, pl_module):
-        for callback in self.callbacks:
-            callback.on_validation_epoch_end(trainer, pl_module)
-
-    def on_test_epoch_end(self, trainer, pl_module):
-        pass
