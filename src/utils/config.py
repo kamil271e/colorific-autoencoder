@@ -6,58 +6,60 @@ from src.utils.callbacks import Callbacks
 
 
 class Config:
-    # DATA MODULE
-    TRAIN_RATIO = 0.7
-    BATCH_SIZE = 32
-    IMAGE_RESOLUTION = (160, 160)  # x, y % 32 == 0
-    PREDICTORS_DIR = "../data/gray/"
-    TARGETS_DIR = "../data/color/"
-    IMAGE_EXT = "jpg"
+    def __init__(self):
+        # DATA MODULE
+        self.TRAIN_RATIO = 0.7
+        self.BATCH_SIZE = 32
+        self.IMAGE_RESOLUTION = (160, 160)  # x, y % 32 == 0
+        self.PREDICTORS_DIR = "../data/gray/"
+        self.TARGETS_DIR = "../data/color/"
+        self.IMAGE_EXT = "jpg"
 
-    # MODEL ARCHITECTURE
-    IN_CHANNELS = 1
-    OUT_CHANNELS = 3
-    UNIT = 16
+        # MODEL ARCHITECTURE
+        self.IN_CHANNELS = 1
+        self.OUT_CHANNELS = 3
+        self.UNIT = 16
 
-    # TRAINING DETAILS
-    LR = 1e-3
-    EPOCHS = 200
-    EARLY_STOP_PATIENCE = 5
-    LR_MONITOR = True
-    SCHEDULER_STEP_SIZE = 10
-    SCHEDULER_GAMMA = 0.9
-    CKPT_DIR = "checkpoints"
-    CKPT_NAME = f"b{BATCH_SIZE}_u{UNIT}_e{EPOCHS}"
-    CKPT_PATH = os.path.join(CKPT_DIR, CKPT_NAME + ".ckpt")
-    FAST_DEV_RUN = False
-    NUM_SANITY_VAL_STEPS = 0
-    LOG_STEPS = 20
+        # TRAINING DETAILS
+        self.LR = 1e-3
+        self.EPOCHS = 50
+        self.EARLY_STOP_PATIENCE = 5
+        self.LR_MONITOR = True
+        self.SCHEDULER_STEP_SIZE = 10
+        self.SCHEDULER_GAMMA = 0.9
+        self.CKPT_DIR = "checkpoints"
+        self.CKPT_NAME = f"b{self.BATCH_SIZE}_u{self.UNIT}_e{self.EPOCHS}"
+        self.CKPT_PATH = os.path.join(self.CKPT_DIR, self.CKPT_NAME + ".ckpt")
+        self.FAST_DEV_RUN = False
+        self.NUM_SANITY_VAL_STEPS = 0
+        self.LOG_STEPS = 20
+        self.WEIGHT_DECAY = 0
+        self.DROPOUT_RATE = 0
 
-    @classmethod
-    def get_trainer_args(cls):
+    def get_trainer_args(self):
         return {
-            "max_epochs": cls.EPOCHS,
-            "fast_dev_run": cls.FAST_DEV_RUN,
-            "num_sanity_val_steps": cls.NUM_SANITY_VAL_STEPS,
-            "log_every_n_steps": cls.LOG_STEPS,
-            "callbacks": cls.get_callbacks(),
+            "max_epochs": self.EPOCHS,
+            "fast_dev_run": self.FAST_DEV_RUN,
+            "num_sanity_val_steps": self.NUM_SANITY_VAL_STEPS,
+            "log_every_n_steps": self.LOG_STEPS,
+            "callbacks": self.get_callbacks(),
         }
 
-    @classmethod
-    def get_train_wrapper_args(cls):
+    def get_train_wrapper_args(self):
         return {
-            "in_channels": cls.IN_CHANNELS,
-            "out_channels": cls.OUT_CHANNELS,
-            "unit": cls.UNIT,
-            "lr": cls.LR,
+            "in_channels": self.IN_CHANNELS,
+            "out_channels": self.OUT_CHANNELS,
+            "unit": self.UNIT,
+            "lr": self.LR,
+            "weight_decay": self.WEIGHT_DECAY,
+            "dropout_rate": self.DROPOUT_RATE,
         }
 
-    @classmethod
-    def get_callbacks(cls):
+    def get_callbacks(self):
         callbacks = Callbacks(
-            ckpt_path=cls.CKPT_DIR,
-            ckpt_file=cls.CKPT_NAME,
-            early_stop_patience=cls.EARLY_STOP_PATIENCE,
-            lr_monitor=cls.LR_MONITOR,
+            ckpt_path=self.CKPT_DIR,
+            ckpt_file=self.CKPT_NAME,
+            early_stop_patience=self.EARLY_STOP_PATIENCE,
+            lr_monitor=self.LR_MONITOR,
         )
         return callbacks.callbacks

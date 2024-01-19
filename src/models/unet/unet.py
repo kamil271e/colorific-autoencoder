@@ -8,10 +8,10 @@ from src.models.unet.decoder import Decoder
 
 
 class UNet(L.LightningModule):
-    def __init__(self, in_channels, out_channels, unit):
+    def __init__(self, in_channels, out_channels, unit, dropout_rate):
         super(UNet, self).__init__()
         self.encoder = Encoder(in_channels, unit)
-        self.decoder = Decoder(out_channels, unit)
+        self.decoder = Decoder(out_channels, unit, dropout_rate)
 
     def forward(self, X):
         encoded_features = self.encoder(X)

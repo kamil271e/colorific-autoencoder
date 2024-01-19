@@ -20,11 +20,14 @@ class AutoEncoder(L.LightningModule):
         out_channels=config.OUT_CHANNELS,
         unit=config.OUT_CHANNELS,
         lr=config.LR,
+        weight_decay=config.WEIGHT_DECAY,
+        dropout_rate=config.DROPOUT_RATE,
     ):
         super().__init__()
-        self.model = UNet(in_channels, out_channels, unit)
-        self.criterion = nn.MSELoss()
+        self.model = UNet(in_channels, out_channels, unit, dropout_rate)
+        self.criterion = nn.L1Loss()
         self.lr = lr
+        self.weight_decay = weight_decay
         self.data_module = DataModule()
 
         self.total_train_loss_epoch = 0
@@ -65,7 +68,10 @@ class AutoEncoder(L.LightningModule):
         return {"test_loss": loss}
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(
+            self.parameters(), lr=self.lr, weight_decay=self.weight_decay
+        )
+        print("WEIGHT_DECAY:", self.weight_decay)
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer,
             step_size=config.SCHEDULER_STEP_SIZE,
@@ -98,24 +104,27 @@ class AutoEncoder(L.LightningModule):
         plt.legend()
         plt.show()
 
-    def visualize_predict(self, num_samples):
-        batch = next(iter(self.test_dataloader()))
-        X, y = batch
-        y_hat = self.model.forward(X)
+    def visualize_predict(self, num_samples, batches=1):
 
-        fig, ax = plt.subplots(num_samples, 3, figsize=(9, 3 * num_samples))
-        for i in range(num_samples):
-            ax[i, 0].imshow(X[i][0], cmap="gray")
-            ax[i, 0].set_title("Input")
-            ax[i, 0].axis("off")
-            ax[i, 1].imshow(y[i].permute(1, 2, 0))
-            ax[i, 1].set_title("Target")
-            ax[i, 1].axis("off")
-            ax[i, 2].imshow(y_hat[i].permute(1, 2, 0).detach().numpy())
-            ax[i, 2].set_title("Prediction")
-            ax[i, 2].axis("off")
-        plt.show()
-        print(f"batch loss: {self.criterion(y, y_hat)}")
+        for i, batch in enumerate(self.test_dataloader()):
+            X, y = batch
+            y_hat = self.model.forward(X)
+
+            fig, ax = plt.subplots(num_samples, 3, figsize=(9, 3 * num_samples))
+            for i in range(num_samples):
+                ax[i, 0].imshow(X[i][0], cmap="gray")
+                ax[i, 0].set_title("Input")
+                ax[i, 0].axis("off")
+                ax[i, 1].imshow(y[i].permute(1, 2, 0))
+                ax[i, 1].set_title("Target")
+                ax[i, 1].axis("off")
+                ax[i, 2].imshow(y_hat[i].permute(1, 2, 0).detach().numpy())
+                ax[i, 2].set_title("Prediction")
+                ax[i, 2].axis("off")
+            plt.show()
+            print(f"batch loss: {self.criterion(y, y_hat)}")
+            if i - 1 >= batches:
+                break
 
     #####################################################
 
