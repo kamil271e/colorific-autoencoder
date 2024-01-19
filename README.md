@@ -1,5 +1,5 @@
 # colorific-autoencoder
-PUT Assignment for Intro to ML and Neural Network course
+Autoencoder for coloring black and white images implemented in PyTorch Lightning
 
 ### Install prerequisites
 ```shell
